@@ -1,0 +1,239 @@
+# ===================================================================
+# .gitignore para Customer API - Observabilidad con OpenTelemetry
+# ===================================================================
+
+# ==================== JAVA & MAVEN ====================
+# Archivos compilados
+target/
+!.mvn/wrapper/maven-wrapper.jar
+!**/src/main/**/target/
+!**/src/test/**/target/
+*.class
+*.jar
+*.war
+*.ear
+*.zip
+*.tar.gz
+*.rar
+
+# Archivos de Maven
+pom.xml.tag
+pom.xml.releaseBackup
+pom.xml.versionsBackup
+pom.xml.next
+release.properties
+dependency-reduced-pom.xml
+buildNumber.properties
+.mvn/timing.properties
+
+# ==================== SPRING BOOT ====================
+HELP.md
+.springBeans
+.factorypath
+.sts4-cache
+
+# ==================== LOGS ====================
+# Archivos de log
+*.log
+log/
+logs/
+*.log.*
+*.log.gz
+
+# OpenTelemetry logs
+log/otel/*.log
+
+# ==================== IDE & EDITORES ====================
+# IntelliJ IDEA
+.idea/
+*.iml
+*.ipr
+*.iws
+out/
+.idea_modules/
+
+# Eclipse
+.project
+.classpath
+.settings/
+.metadata/
+.recommenders/
+.apt_generated
+bin/
+tmp/
+*.tmp
+*.bak
+*.swp
+*~.nib
+local.properties
+
+# NetBeans
+/nbproject/private/
+/nbbuild/
+/dist/
+/nbdist/
+/.nb-gradle/
+build/
+!**/src/main/**/build/
+!**/src/test/**/build/
+
+# VS Code
+.vscode/
+*.code-workspace
+.history/
+
+# Sublime Text
+*.sublime-project
+*.sublime-workspace
+
+# Vim
+*.swp
+*.swo
+*~
+
+# ==================== SISTEMA OPERATIVO ====================
+# MacOS
+.DS_Store
+.AppleDouble
+.LSOverride
+._*
+
+# Linux
+*~
+.directory
+.Trash-*
+
+# Windows
+Thumbs.db
+Thumbs.db:encryptable
+ehthumbs.db
+ehthumbs_vista.db
+Desktop.ini
+$RECYCLE.BIN/
+*.lnk
+
+# ==================== DOCKER ====================
+# Docker override y volumenes locales persistentes
+docker-compose.override.yml
+
+# ==================== VARIABLES DE ENTORNO ====================
+# Archivos con credenciales y secretos (IMPORTANTE)
+.env
+.env.local
+.env.development.local
+.env.test.local
+.env.production.local
+*.key
+*.pem
+*.p12
+*.jks
+credentials.properties
+secrets.properties
+application-prod.properties
+application-secret.properties
+
+# ==================== BASES DE DATOS ====================
+# Datos de base de datos local
+*.sql
+*.sqlite
+*.db
+data/
+pgdata/
+postgres-data/
+
+# ==================== NODE (si hay frontend) ====================
+node_modules/
+npm-debug.log*
+yarn-debug.log*
+yarn-error.log*
+package-lock.json
+yarn.lock
+
+# ==================== PYTHON ====================
+# Python bytecode
+__pycache__/
+*.py[cod]
+*$py.class
+*.so
+.Python
+build/
+develop-eggs/
+dist/
+downloads/
+eggs/
+.eggs/
+lib/
+lib64/
+parts/
+sdist/
+var/
+wheels/
+*.egg-info/
+.installed.cfg
+*.egg
+MANIFEST
+venv/
+ENV/
+env/
+.venv
+.ipynb_checkpoints
+.python-version
+
+# ==================== MONITOREO & OBSERVABILIDAD ====================
+# Datos persistentes de herramientas de monitoreo
+grafana/data/
+grafana.db
+prometheus/data/
+loki/data/
+jaeger/data/
+
+# ==================== TEMPORALES & CACHE ====================
+*.tmp
+*.temp
+temp/
+tmp/
+cache/
+.cache/
+
+# ==================== OTROS ====================
+# JRebel
+rebel.xml
+rebel-remote.xml
+
+# SonarQube
+.sonar/
+
+# Kubernetes secrets
+*-secret.yaml
+secrets.yaml
+
+# Terraform
+*.tfstate
+*.tfstate.*
+.terraform/
+
+# Archivos grandes
+*.iso
+*.dmg
+*.pkg
+
+# ==================== PERMITIR ARCHIVOS IMPORTANTES ====================
+# Asegurar que estos SÍ se suban
+!.gitignore
+!README.md
+!QUICK_START.md
+!CAMBIOS_REALIZADOS.md
+!RESUMEN_FINAL.md
+!setup_and_test.py
+!docker-compose.yml
+!Dockerfile
+!pom.xml
+!mvnw
+!mvnw.cmd
+!.mvn/wrapper/maven-wrapper.properties
+!lombok.config
+
+# Permitir configs sin credenciales
+!config/**/*.yml
+!config/**/*.yaml
+!src/main/resources/application.properties

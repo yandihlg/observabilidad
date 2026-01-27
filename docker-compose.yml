@@ -1,0 +1,191 @@
+version: '3.9'
+
+services:
+  customer-api:
+    build:
+      context: .
+      dockerfile: Dockerfile
+    container_name: customer-api
+    ports:
+      - "8080:8080"
+    environment:
+      - SPRING_DATASOURCE_URL=jdbc:postgresql://postgresql:5432/Northwind
+      - SPRING_DATASOURCE_USERNAME=root
+      - SPRING_DATASOURCE_PASSWORD=secret
+      - SPRING_RABBITMQ_HOST=rabbitmq
+      - SPRING_RABBITMQ_PORT=5672
+      - SPRING_RABBITMQ_USERNAME=guest
+      - SPRING_RABBITMQ_PASSWORD=guest
+      - SPRING_REDIS_HOST=redis
+      - SPRING_REDIS_PORT=6379
+    networks:
+      - customer-network
+    restart: unless-stopped
+    depends_on:
+      postgresql:
+        condition: service_started
+      rabbitmq:
+        condition: service_started
+      redis:
+        condition: service_started
+    profiles:
+      - ""
+
+  # OPCIONAL: Si deseas ejecutar los servicios también en Docker
+  postgresql:
+    image: postgres:14-alpine
+    container_name: customer-db
+    environment:
+      POSTGRES_DB: Northwind
+      POSTGRES_USER: root
+      POSTGRES_PASSWORD: secret
+    ports:
+      - "5432:5432"
+    volumes:
+      - postgres-data:/var/lib/postgresql/data
+    networks:
+      - customer-network
+    profiles:
+      - ""
+      - "with-services"
+
+  rabbitmq:
+    image: rabbitmq:3.13-management-alpine
+    container_name: customer-rabbitmq
+    environment:
+      RABBITMQ_DEFAULT_USER: guest
+      RABBITMQ_DEFAULT_PASS: guest
+    ports:
+      - "5672:5672"
+      - "15672:15672"
+    volumes:
+      - rabbitmq-data:/var/lib/rabbitmq
+    networks:
+      - customer-network
+    profiles:
+      - ""
+      - "with-services"
+
+  redis:
+    image: redis:7-alpine
+    container_name: customer-redis
+    ports:
+      - "6379:6379"
+    volumes:
+      - redis-data:/data
+    networks:
+      - customer-network
+    profiles:
+      - ""
+      - "with-services"
+
+  # Observability Services
+  # Jaeger backend for traces
+  jaeger:
+    image: jaegertracing/all-in-one:1.62.0
+    container_name: customer-jaeger
+    ports:
+      - "16686:16686" # Jaeger Web UI
+      - "5775:5775"   # accept zipkin.thrift over compact thrift protocol
+      - "6831:6831"   # accept jaeger.thrift over compact thrift protocol
+      - "6832:6832"   # accept jaeger.thrift over binary thrift protocol
+      - "5778:5778"   # serve configs
+      - "14268:14268" # accept jaeger.thrift directly from clients
+    networks:
+      - customer-network
+    profiles:
+      - "with-observability"
+
+  # Zipkin backend for traces
+  zipkin:
+    image: openzipkin/zipkin:3
+    container_name: customer-zipkin
+    ports:
+      - "9411:9411"
+    networks:
+      - customer-network
+    profiles:
+      - "with-observability"
+
+  # Prometheus backend for metrics
+  prometheus:
+    image: prom/prometheus:v2.54.1
+    container_name: customer-prometheus
+    volumes:
+      - ./config/prometheus/prometheus.yml:/etc/prometheus/prometheus.yml
+    ports:
+      - "9090:9090"
+    networks:
+      - customer-network
+    profiles:
+      - "with-observability"
+
+  # Loki backend for logs
+  loki:
+    image: grafana/loki:main-5d477fb
+    container_name: customer-loki
+    ports:
+      - "3100:3100"
+    command: -config.file=/etc/loki/local-config.yaml
+    networks:
+      - customer-network
+    profiles:
+      - "with-observability"
+
+  # Data visualization tool
+  grafana:
+    image: grafana/grafana:main-ubuntu
+    container_name: customer-grafana
+    volumes:
+      - ./config/grafana/grafana-datasources.yml:/etc/grafana/provisioning/datasources/datasources.yml
+    environment:
+      GF_AUTH_ANONYMOUS_ENABLED: "true"
+      GF_AUTH_ANONYMOUS_ORG_ROLE: "Admin"
+    ports:
+      - "3000:3000"
+    networks:
+      - customer-network
+    profiles:
+      - "with-observability"
+
+  # OpenTelemetry Collector
+  otel-collector:
+    image: otel/opentelemetry-collector-contrib:0.111.0
+    container_name: customer-otel-collector
+    volumes:
+      - ./config/otel-collector/otel-config.yaml:/etc/otel/config.yaml
+      - ./log:/log/otel
+    command: --config /etc/otel/config.yaml
+    environment:
+      JAEGER_ENDPOINT: "jaeger:4317"
+      ZIPKIN_ENDPOINT: "http://zipkin:9411/api/v2/spans"
+      PROMETHEUS_ENDPOINT: "0.0.0.0:8889"
+      LOKI_ENDPOINT: "http://loki:3100/loki/api/v1/push"
+    ports:
+      - "4317:4317"   # OTLP Receiver protocol gRPC
+      - "4318:4318"   # OTLP Receiver protocol HTTP
+      - "13133:13133" # health_check extension
+      - "55679:55679" # ZPages extension
+      - "8889:8889"   # Prometheus metrics exporter (scrape endpoint)
+    depends_on:
+      jaeger:
+        condition: service_started
+      zipkin:
+        condition: service_started
+      prometheus:
+        condition: service_started
+      loki:
+        condition: service_started
+    networks:
+      - customer-network
+    profiles:
+      - "with-observability"
+
+networks:
+  customer-network:
+    driver: bridge
+
+volumes:
+  postgres-data:
+  rabbitmq-data:
+  redis-data:
